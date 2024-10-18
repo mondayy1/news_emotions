@@ -1,2 +1,2 @@
-# news_insights
-crawl and track trend of korea/foreign news platforms
+# news_emotions
+gather emotions of EARTH
