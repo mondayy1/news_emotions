@@ -7,7 +7,7 @@ from api.utils.config import news_kor
 class NewsCrawler:
     def __init__(self, urls):
         self.urls = urls
-        self.results = {}
+        self.results = {'title': [], 'content': []}
 
     def fetch(self, url):
         try:
@@ -25,13 +25,10 @@ class NewsCrawler:
         parser = BeautifulSoup(html, 'xml')
         items = parser.find_all('item')
 
-        result = {'title': [], 'content': []}
-
         for item in items:
-            result['title'].append(item.find('title').text)
-            result['content'].append(item.find('description').text)
+            self.results['title'].append(item.find('title').text)
+            self.results['content'].append(item.find('description').text)
 
-        self.results[url] = result
 
     def crawl_single_url(self, url):
         html = self.fetch(url)
@@ -48,7 +45,7 @@ def get_korean_news():
     urls_kor = news_kor
 
     crawler = NewsCrawler(urls_kor)
-    crawler.crawl_all(max_workers=3)
+    crawler.crawl_all(max_workers=5)
 
     results = crawler.get_results()
 
