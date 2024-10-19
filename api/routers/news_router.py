@@ -11,4 +11,3 @@ def news_korean_emotions():
     emotions = get_emotions(news['title'], news['content'])
     wordcount = get_wordcount(news['title'], news['content'])
     return {"korean_news": news, "emotions": emotions, "wordcount": wordcount}
-    
