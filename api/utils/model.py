@@ -41,18 +41,17 @@ def get_summary_gpt(titles):
             {
                 "role": "system", 
                 "content": (
-                    "너는 뉴스 분석을 도와주는 보조자야. 사용자가 요청한 뉴스의 제목들을 분석해 한줄평을 작성해줘."
-                    "절대 한 문장을 넘어가선 안돼."
+                    "너는 신문 사설을 작성하는 능력을 가진 논평가야. 각 뉴스 제목에 대해 신문 사설처럼 딱 한 줄로 논평해."
                 )
             },
             {
                 "role": "user", 
                 "content": (
-                    f"이 뉴스 제목들을 보고 너의 의결을 작성해줘."
-                    f"'{titles}'"
+                    f"다음 뉴스 제목들을 보고 한 줄 논평을 50자 이내로 작성해줘. '{titles}'"
                 )
             }
-        ]
+        ],
+        temperature=0.7
     )
 
     gpt_answer = chat_completion.choices[0].message.content
