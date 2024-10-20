@@ -8,7 +8,7 @@ router = APIRouter()
 @router.get("/api/news/korean")
 def news_korean_emotions():
     news = get_korean_news()
-    emotions = get_emotions(news['title'], news['content'])
+    pos, negs = get_posnegs_gpt(news['title'])
+    summary = get_summary_gpt(pos + negs)
     wordcount = get_wordcount(news['title'], news['content'])
-    return {"korean_news": news, "emotions": emotions, "wordcount": wordcount}
-    
+    return {"korean_news": news, "positives": pos, "negatives": negs, "summary": summary, "wordcount": wordcount}
