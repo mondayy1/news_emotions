@@ -1,5 +1,4 @@
 <template>
-  <!-- HelloWorld 컴포넌트만 포함 -->
   <HelloWorld />
 </template>
 
@@ -21,13 +20,20 @@ export default {
     font-weight: 400;
     font-style: normal;
 }
-
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+body {
+  background:#fff;
+  overflow-x:hidden;
+}
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Pretendard-Regular';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>

@@ -1,14 +1,20 @@
 <template>
-  <div>
-    <h2 class="summary">{{ summary }}</h2> <!-- Summary displayed here -->
+  <div class="transition" :class="{animtrans: isActive}"></div>
+  <div v-if="isShow" class="content">
+    <h1>GPT신문에 오신 것을 환영합니다.</h1>
+    <p>*GPT ai를 활용하여, 가독성 및 정확도가 떨어집니다.</p>
+    <button @click="toggleClass" class="cta">신문 읽기</button>
+  </div>
+  <div v-if="!isShow" class="main">
+    <h2 class="summary">{{ summary }}</h2>
     <div ref="wordCloud" class="wordcloud"></div>
     <div class="word-section">
       <h3>Positive Words</h3>
-      <div ref="positiveWords" class="words-list"></div> <!-- Container for positive words -->
+      <div ref="positiveWords" class="words-list"></div>
     </div>
     <div class="word-section">
       <h3>Negative Words</h3>
-      <div ref="negativeWords" class="words-list"></div> <!-- Container for negative words -->
+      <div ref="negativeWords" class="words-list"></div>
     </div>
   </div>
 </template>
@@ -27,10 +33,12 @@ export default {
       summary: "", // Summary text from JSON
       positiveWords: [], // Positive words
       negativeWords: [], // Negative words
+      isActive: false,
+      isShow: true,
     };
   },
   mounted() {
-    this.fetchWordData(); // Load data when component is mounted
+     // Load data when component is mounted
   },
   methods: {
     fetchWordData() {
@@ -39,11 +47,11 @@ export default {
 
       // Filter words between 5 and 40
       this.words = Object.keys(wordcount)
-        .filter(word => wordcount[word] >= 5 && wordcount[word] <= 40)
+        .filter(word => wordcount[word] >= 5 && wordcount[word] <= 40 && word.length > 1)
         .map(word => {
           return {
             text: word,
-            size: wordcount[word], // Set size from wordcount
+            size: wordcount[word] * 2, // Set size from wordcount
           };
         });
 
@@ -54,6 +62,16 @@ export default {
       // Create the word cloud
       this.drawWordCloud();
       this.displayWords(); // Display positive and negative words
+    },
+    toggleClass() {
+      if (this.isActive == true) return;
+      this.isActive = true;
+      setTimeout(() => {
+        this.isShow = false;
+        setTimeout(() => {
+          this.fetchWordData();
+        }, 1);
+      }, 2000);
     },
     drawWordCloud() {
       const width = 500;
@@ -129,8 +147,15 @@ export default {
 </script>
 
 <style scoped>
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+.main {
+  margin: 0 200px;
+}
 .wordcloud {
-  font-family: 'Pretendard-Regular';
   width: 500px;
   height: 500px;
   margin: 0 auto;
@@ -148,5 +173,47 @@ export default {
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px; /* Adjust spacing between words */
+}
+.transition {
+  position:absolute;
+  height:100%;
+  width:8%;
+  background:#d6d6d6;
+  transform: skewX(-5deg) translateX(-50px);
+  transition:2s all ease-in-out;
+  -webkit-transition:2s all ease-in-out;
+}
+.content {
+  top: 30vh;
+  position:relative;
+  color:#000;
+  z-index:10;
+  height:300px;
+}
+.cta {
+  outline:none;
+  border:none;
+  text-decoration:none;
+  text-transform:uppercase;
+  background:#202020;
+  color:#eaeaea;
+  box-sizing:border-box;
+  margin-top:20px;
+  padding:10px 40px;
+}
+.animtrans {
+  animation: anim 4s ease-in-out;
+}
+@keyframes anim{
+     0% { }
+     20%  { z-index:11;\transform: skewX(5deg) translateX(-100%); }
+     40%   { transform: skewX(0deg) translateX(0);
+ width:100%; z-index:11; box-shadow: 10px 10px 5px #eaeaea;}
+     60%   { transform: skewX(3deg) translateX(0);
+ width:100%;z-index:11; box-shadow: 10px 10px 5px #eaeaea;}
+     80%   { transform: skewX(1deg) translateX(-100%);
+ width:50%;z-index:11; box-shadow: 10px 10px 5px #eaeaea;}
+     100%   { transform: skewX(-5deg) translateX(-50px);
+ width:8%;z-index:1; box-shadow: none;}
 }
 </style>
