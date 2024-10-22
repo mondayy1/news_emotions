@@ -2,76 +2,112 @@
   <div class="transition" :class="{animtrans: isActive}"></div>
   <div v-if="isShow" class="content">
     <h1>GPT신문에 오신 것을 환영합니다.</h1>
-    <p>*GPT ai를 활용하여, 가독성 및 정확도가 떨어집니다.</p>
-    <button @click="toggleClass" class="cta">신문 읽기</button>
+    <p>*GPT api를 활용하여, 가독성 및 정확도가 다소 부족할 수 있습니다.</p>
+    <button v-if="isLoaded" @click="toggleClass" class="cta">신문 읽기</button>
+    <p v-else>로딩중...</p>
   </div>
   <div v-if="!isShow" class="main">
+    <h1 class="title">GPT신문</h1>
+    <hr class="hr-1">
     <h2 class="summary">{{ summary }}</h2>
-    <div ref="wordCloud" class="wordcloud"></div>
-    <div class="word-section">
-      <h3>Positive Words</h3>
-      <div ref="positiveWords" class="words-list"></div>
-    </div>
-    <div class="word-section">
-      <h3>Negative Words</h3>
-      <div ref="negativeWords" class="words-list"></div>
+    <hr class="hr-1">
+    <div class="move-right">
+      <div ref="wordCloud" class="wordcloud"></div>
+      <hr class="hr-2">
+      <div class="main-content">
+        <div class="word-section">
+          <h3>😀</h3>
+          <div ref="positiveWords" class="words-list"></div>
+        </div>
+        <hr class="hr-1">
+        <div class="word-section">
+          <h3>😢</h3>
+          <div ref="negativeWords" class="words-list"></div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-// Import local file
-import wordData from "@/assets/response_1729483734840.json"; 
+//import wordData from "@/assets/response_1729483734840.json";
 import cloud from "d3-cloud";
 import * as d3 from "d3";
+import axios from 'axios';
 
 export default {
   name: "HelloWorld",
   data() {
     return {
-      words: [], // Words for the word cloud
-      summary: "", // Summary text from JSON
-      positiveWords: [], // Positive words
-      negativeWords: [], // Negative words
+      words: [],
+      summary: "",
+      positiveWords: [],
+      negativeWords: [],
       isActive: false,
       isShow: true,
+      isLoaded: false,
     };
   },
   mounted() {
-     // Load data when component is mounted
+    this.fetchWordData();
   },
   methods: {
     fetchWordData() {
-      const { wordcount, summary, positives, negatives } = wordData; // Extract data
-      this.summary = summary; // Set summary text
-
-      // Filter words between 5 and 40
-      this.words = Object.keys(wordcount)
-        .filter(word => wordcount[word] >= 5 && wordcount[word] <= 40 && word.length > 1)
-        .map(word => {
-          return {
-            text: word,
-            size: wordcount[word] * 2, // Set size from wordcount
-          };
+      axios
+        .get("http://203.255.92.239:10000/api/news/korean")
+        .then((response) => {
+          console.log(response); // 응답을 콘솔에 로그로 출력
+          if (response && response.data) {
+            const { summary, positives, negatives, wordcount } = response.data;
+            this.summary = summary || '데이터 없음';
+            this.positiveWords = positives || [];
+            this.negativeWords = negatives || [];
+            this.words = Object.keys(wordcount)
+              .filter(word => wordcount[word] >= 5 && wordcount[word] <= 40 && word.length > 1)
+              .map(word => {
+                return {
+                  text: word,
+                  size: wordcount[word] * 2,
+                };
+              });
+          } else {
+            alert('API 응답에 데이터가 없습니다.');
+          }
+        })
+        .catch((error) => {
+          // 오류를 상세하게 처리
+          if (error.response) {
+            // 요청이 이루어졌고, 서버가 상태 코드로 응답했지만 응답이 2xx가 아닌 경우
+            console.error('응답 데이터:', error.response.data);
+            console.error('응답 상태:', error.response.status);
+            console.error('응답 헤더:', error.response.headers);
+            alert(`서버 오류 발생: ${error.response.status}`);
+          } else if (error.request) {
+            // 요청이 이루어졌으나 응답을 받지 못한 경우
+            console.error('요청 데이터:', error.request);
+            alert('서버 응답을 받지 못했습니다. 네트워크를 확인하세요.');
+          } else {
+            // 오류를 발생시킨 요청 설정
+            console.error('오류 메시지:', error.message);
+            alert(`오류 발생: ${error.message}`);
+          }
         });
-
-      // Set positive and negative words
-      this.positiveWords = positives || [];
-      this.negativeWords = negatives || [];
-
-      // Create the word cloud
-      this.drawWordCloud();
-      this.displayWords(); // Display positive and negative words
     },
     toggleClass() {
       if (this.isActive == true) return;
       this.isActive = true;
       setTimeout(() => {
-        this.isShow = false;
-        setTimeout(() => {
-          this.fetchWordData();
-        }, 1);
+        if (this.isLoaded){
+          this.isShow = false;
+          setTimeout(() => {
+            this.drawWordCloud();
+            this.displayWords();
+          }, 1);
+        }else{
+          alert("failed to load content");
+        }
       }, 2000);
+      
     },
     drawWordCloud() {
       const width = 500;
@@ -79,11 +115,11 @@ export default {
 
       const layout = cloud()
         .size([width, height])
-        .words(this.words) // Use fetched words for word cloud
+        .words(this.words)
         .padding(5)
         .rotate(() => ~~(Math.random() * 2) * 90)
         .font("Impact")
-        .fontSize(d => d.size) // Set size of each word
+        .fontSize(d => d.size)
         .on("end", this.draw);
 
       layout.start();
@@ -96,7 +132,7 @@ export default {
         .attr("width", 500)
         .attr("height", 500)
         .append("g")
-        .attr("transform", "translate(250,250)")  // Center alignment
+        .attr("transform", "translate(250,250)")
         .selectAll("text")
         .data(words)
         .enter()
@@ -107,14 +143,11 @@ export default {
         .attr("text-anchor", "middle")
         .attr("transform", d => `translate(${[d.x, d.y]})rotate(${d.rotate})`)
         .text(d => d.text)
-        .on("click", (event, d) => {
-          alert(`You clicked on: ${d.text}`);
-        })
         .on("mouseover", function () {
           d3.select(this)
             .transition()
             .duration(200)
-            .style("font-size", d => `${d.size * 1.1}px`);  // Slightly increase size
+            .style("font-size", d => `${d.size * 1.1}px`);
         })
         .on("mouseout", function () {
           d3.select(this)
@@ -124,23 +157,20 @@ export default {
         });
     },
     displayWords() {
-      // Display positive words
       d3.select(this.$refs.positiveWords)
         .selectAll("div")
         .data(this.positiveWords)
         .enter()
         .append("div")
         .text(d => d)
-        .style("color", "green"); // You can style it as needed
-
-      // Display negative words
+        .style("color", "green");
       d3.select(this.$refs.negativeWords)
         .selectAll("div")
         .data(this.negativeWords)
         .enter()
         .append("div")
         .text(d => d)
-        .style("color", "red"); // You can style it as needed
+        .style("color", "red");
     },
   },
 };
@@ -152,17 +182,52 @@ export default {
   padding: 0;
   margin: 0;
 }
+hr {
+  background-color: #eeeeee;
+  padding: 0;
+  margin: 10px;
+}
+hr.hr-1 {
+  border: 0;
+  height: 1px;
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+}
+hr.hr-2 {
+  border: 0;
+  width: 1px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+}
+h3 {
+  font-size: 30px;
+  margin-bottom: 10px;
+}
 .main {
+  background: #eeeeee;
   margin: 0 200px;
+  transform: rotate(3deg);
+}
+.move-right {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+}
+.main-content {
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
 }
 .wordcloud {
   width: 500px;
   height: 500px;
   margin: 0 auto;
 }
+.title {
+  font-family: 'ClimateCrisisKR-1979';
+  font-size: 72px;
+  padding-top: 20px;
+}
 .summary {
+  padding: 0 50px;
   text-align: center;
-  font-size: 24px; /* Adjust font size for the summary */
+  font-size: 20px;
 }
 .word-section {
   margin-top: 20px;
@@ -172,19 +237,19 @@ export default {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px; /* Adjust spacing between words */
+  gap: 10px;
 }
 .transition {
   position:absolute;
   height:100%;
   width:8%;
-  background:#d6d6d6;
+  background: #d6d6d6;
   transform: skewX(-5deg) translateX(-50px);
   transition:2s all ease-in-out;
   -webkit-transition:2s all ease-in-out;
 }
 .content {
-  top: 30vh;
+  top: 40vh;
   position:relative;
   color:#000;
   z-index:10;

@@ -20,17 +20,27 @@ export default {
     font-weight: 400;
     font-style: normal;
 }
+@font-face {
+    font-family: 'ClimateCrisisKR-1979';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/ClimateCrisisKR-1979.woff2') format('woff2');
+    font-weight: 900;
+    font-style: normal;
+}
 * {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
 }
 body {
+ -webkit-user-select: none;
+ -moz-user-select: none;
+ -ms-use-select: none;
+  user-select: none;
   background:#fff;
-  overflow-x:hidden;
+  overflow:hidden;
 }
 #app {
-  font-family: 'Pretendard-Regular';
+  font-family: 'Pretendard-Regular', 'ClimateCrisisKR-1979';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
