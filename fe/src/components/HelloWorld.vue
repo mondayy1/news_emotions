@@ -236,7 +236,7 @@ h3 {
   gap: 10px;
 }
 .transition {
-  position:absolute;
+  position:fixed;
   height:100%;
   width:8%;
   background: #d6d6d6;

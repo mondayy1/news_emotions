@@ -37,7 +37,7 @@ body {
  -ms-use-select: none;
   user-select: none;
   background:#fff;
-  overflow:hidden;
+  overflow-x:hidden;
 }
 #app {
   font-family: 'Pretendard-Regular', 'ClimateCrisisKR-1979';
