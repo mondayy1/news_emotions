@@ -30,7 +30,6 @@
 </template>
 
 <script>
-//import wordData from "@/assets/response_1729483734840.json";
 import cloud from "d3-cloud";
 import * as d3 from "d3";
 import axios from 'axios';
