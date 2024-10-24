@@ -4,7 +4,7 @@
     <h1>GPT신문에 오신 것을 환영합니다.</h1>
     <p>*GPT api를 활용하여, 가독성 및 정확도가 다소 부족할 수 있습니다.</p>
     <button v-if="isLoaded" @click="toggleClass" class="cta">신문 읽기</button>
-    <p v-else>{{ loadingText }}</p>
+    <p v-else>로딩중...</p>
   </div>
   <div v-if="!isShow" class="main">
     <h1 class="title">GPT신문</h1>
@@ -46,49 +46,52 @@ export default {
       isActive: false,
       isShow: true,
       isLoaded: false,
-      loadingText: "로딩중...",
-      loadingInterval: null,
     };
   },
   mounted() {
-    this.startLoadingAnimation();
     this.fetchWordData();
   },
-  beforeUnmount() {
-    clearInterval(this.loadingInterval);
-  },
   methods: {
-    startLoadingAnimation() {
-      let count = 0;
-      this.loadingInterval = setInterval(() => {
-        count = (count + 1) % 4;
-        this.loadingText = "로딩중" + ".".repeat(count);
-      }, 500);
-    },
-    async fetchWordData() {
-      try {
-        const response = await axios.get("http://203.255.92.239:10000/api/news/korean");
-        if (response && response.data) {
-          const { summary, positives, negatives, wordcount } = response.data;
-          this.summary = summary;
-          this.positiveWords = positives || [];
-          this.negativeWords = negatives || [];
-          this.words = Object.keys(wordcount)
-            .filter(word => wordcount[word] >= 5 && wordcount[word] <= 40 && word.length > 1)
-            .map(word => {
-              return {
-                text: word,
-                size: wordcount[word] * 2,
-              };
-            });
-          this.isLoaded = true;
-        } else {
-          alert('API 응답에 데이터가 없습니다.');
-        }
-      } catch (error) {
-        clearInterval(this.loadingInterval);
-        this.loadingText = "데이터를 불러오는 중 오류가 발생했습니다.";
-      }
+    fetchWordData() {
+      axios
+        .get("http://203.255.92.239:10000/api/news/korean")
+        .then((response) => {
+          console.log(response); // 응답을 콘솔에 로그로 출력
+          if (response && response.data) {
+            const { summary, positives, negatives, wordcount } = response.data;
+            this.summary = summary || '데이터 없음';
+            this.positiveWords = positives || [];
+            this.negativeWords = negatives || [];
+            this.words = Object.keys(wordcount)
+              .filter(word => wordcount[word] >= 5 && wordcount[word] <= 40 && word.length > 1)
+              .map(word => {
+                return {
+                  text: word,
+                  size: wordcount[word] * 2,
+                };
+              });
+          } else {
+            alert('API 응답에 데이터가 없습니다.');
+          }
+        })
+        .catch((error) => {
+          // 오류를 상세하게 처리
+          if (error.response) {
+            // 요청이 이루어졌고, 서버가 상태 코드로 응답했지만 응답이 2xx가 아닌 경우
+            console.error('응답 데이터:', error.response.data);
+            console.error('응답 상태:', error.response.status);
+            console.error('응답 헤더:', error.response.headers);
+            alert(`서버 오류 발생: ${error.response.status}`);
+          } else if (error.request) {
+            // 요청이 이루어졌으나 응답을 받지 못한 경우
+            console.error('요청 데이터:', error.request);
+            alert('서버 응답을 받지 못했습니다. 네트워크를 확인하세요.');
+          } else {
+            // 오류를 발생시킨 요청 설정
+            console.error('오류 메시지:', error.message);
+            alert(`오류 발생: ${error.message}`);
+          }
+        });
     },
     toggleClass() {
       if (this.isActive == true) return;
