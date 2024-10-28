@@ -66,7 +66,7 @@ export default {
     },
     async fetchWordData() {
       try {
-        const response = await axios.get("http://203.255.92.239:10000/api/news/korean");
+        const response = await axios.get(".../api/news/korean");//api deleted as requested
         if (response && response.data) {
           const { summary, positives, negatives, wordcount } = response.data;
           this.summary = summary;
@@ -82,7 +82,7 @@ export default {
             });
           this.isLoaded = true;
         } else {
-          alert('API 응답에 데이터가 없습니다.');
+          this.loadingText = 'API 응답에 데이터가 없습니다.';
         }
       } catch (error) {
         clearInterval(this.loadingInterval);
